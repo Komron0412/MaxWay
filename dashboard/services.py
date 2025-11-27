@@ -1,48 +1,45 @@
 from django.db import connection
 from contextlib import closing
 
-
 def dictfetchall(cursor):
     columns = [col[0] for col in cursor.description]
     return [
-        dict(zip(columns, row)) for row in cursor.fetchall()
+        dict(zip(columns,row)) for row in cursor.fetchall()
     ]
-
 
 def dictfetchone(cursor):
     row = cursor.fetchone()
     if row is None:
         return False
     columns = [col[0] for col in cursor.description]
-    return dict(zip(columns, row))
+    return dict(zip(columns,row))
 
-
-def get_categories():
+def get_order_by_user(id):
     with closing(connection.cursor()) as cursor:
-        cursor.execute("""SELECT id,title from food_menu_categories""")
-        categories = dictfetchall(cursor)
-        return categories
+        cursor.execute(""" SELECT food_order.id, food_customer.first_name,food_customer.last_name, food_order.address, food_order.payment_type,food_order.status,food_order.created_at from food_order 
+                            INNER JOIN food_customer on food_customer.id=food_order.customer_id 
+                            where food_order.customer_id =%s""",[id])
+        order = dictfetchall(cursor)
+        return order
 
-
-def get_orders():
+def get_product_by_order(id):
     with closing(connection.cursor()) as cursor:
-        cursor.execute("""Select * from food_menu_orders""")
-        orders = dictfetchall(cursor)
-        return orders
+        cursor.execute(""" SELECT food_orderproduct.count,food_orderproduct.price,
+        food_orderproduct.created_at,food_product.title from food_orderproduct 
+         INNER JOIN food_product ON food_orderproduct.product_id=food_product.id  where order_id=%s""",[id])
+        orderproduct = dictfetchall(cursor)
+        return orderproduct
 
-
-def get_products():
+def get_table():
     with closing(connection.cursor()) as cursor:
-        cursor.execute("""SELECT food_menu_products.id,food_menu_products.name,food_menu_products.description,food_menu_products.price,
-                                 food_menu_products.image as image,food_menu_products.created ,food_menu_categories.title as category_title from food_menu_products
-                       left join food_menu_categories on food_menu_products.category_id = food_menu_categories.id""")
-        products = dictfetchall(cursor)
-        return products
+        cursor.execute(""" 
+        SELECT food_orderproduct.product_id, 
+COUNT(food_orderproduct.product_id),food_product.title 
+FROM food_orderproduct 
+INNER JOIN food_product ON food_product.id=food_orderproduct.product_id 
+GROUP BY food_orderproduct.product_id ,food_product.title 
+order by count desc limit 10
 
-
-def get_users():
-    with closing(connection.cursor()) as cursor:
-        cursor.execute("""SELECT * from food_menu_users""")
-        users = dictfetchall(cursor)
-        return users
-
+        """)
+        table = dictfetchall(cursor)
+        return table

@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     'dashboard',
-    'food_menu',
+    'mathfilters',
+    'food',
     'django.contrib.humanize',
 ]
 
