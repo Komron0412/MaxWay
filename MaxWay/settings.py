@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-)aj&@axb_5n(@_3l7)jvd_r!x7wfzhnvz+9v7-81*hnix+k+1)"
+SECRET_KEY = os.getenv('SECRET_KEY', "django-insecure-)aj&@axb_5n(@_3l7)jvd_r!x7wfzhnvz+9v7-81*hnix+k+1)")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -46,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -88,11 +93,11 @@ WSGI_APPLICATION = "MaxWay.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'maxway_db',
-        'USER': 'maxway_admin',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',  # Or the IP address/hostname of your PostgreSQL server
-        'PORT': '5432',  # Default PostgreSQL port
+        'NAME': os.getenv('DATABASE_NAME', 'maxway_db'),
+        'USER': os.getenv('DATABASE_USER', 'maxway_admin'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'root'),
+        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'PORT': os.getenv('DATABASE_PORT', '5432'),
     }
 }
 
@@ -133,6 +138,10 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR.joinpath("static")]
+STATIC_ROOT = BASE_DIR.joinpath("staticfiles")
+
+# WhiteNoise configuration for static files
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_ROOT = BASE_DIR.joinpath("media")
 MEDIA_URL = "/media/"
